@@ -128,6 +128,7 @@ class App(object):
 
     elif event.keysym in ["Return", "KP_Enter"]:
       self.result.call()
+      self.quit()
 
     elif event.keysym == "Escape":
       self.quit()
