@@ -225,8 +225,6 @@ if __name__ == '__main__':
   root = Tk()
   root.title('QuickSSH')
   root.resizable(0, 0)
-  #root.overrideredirect(True)
   center_window(root)
   app = App(root)
-  root.wm_attributes("-topmost", 1)
   root.mainloop()
