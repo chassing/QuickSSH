@@ -7,7 +7,7 @@ Usage:
 
 from setuptools import setup
 
-APP = ['test.py']
+APP = ['quickssh/main.py']
 DATA_FILES = []
 OPTIONS = {'argv_emulation': True}
 
