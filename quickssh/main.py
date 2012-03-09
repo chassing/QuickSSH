@@ -188,7 +188,7 @@ def center_window(root, width=None, height=None):
   screen_height = root.winfo_screenheight()
   # center the window
   x = int(screen_width / 2 - width / 2)
-  y = int(screen_height / 2 - height / 2)
+  y = int(screen_height / 4)
   root.geometry('%dx%d+%d+%d' % (width, height, x, y))
 
 
