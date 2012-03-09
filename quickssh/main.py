@@ -192,9 +192,9 @@ def center_window(root, width=None, height=None):
   root.geometry('%dx%d+%d+%d' % (width, height, x, y))
 
 
-if __name__ == '__main__':
-
+def main():
   CFG = os.path.join(os.environ["HOME"], ".quick_ssh.json")
+  global CONFIG
 
   try:
     CONFIG = json.loads(open(CFG).read())
@@ -226,5 +226,9 @@ if __name__ == '__main__':
   root.title('QuickSSH')
   root.resizable(0, 0)
   center_window(root)
-  app = App(root)
+  App(root)
   root.mainloop()
+
+
+if __name__ == '__main__':
+  main()
