@@ -28,7 +28,7 @@ class AppScript(object):
 
 class Terminal(AppScript):
   MAC_TERMINAL_SCRIPT = """
-    do script "%(sshprog)s %(host)s"
+    do script "%(sshbin)s %(host)s"
     activate
   """
   MAC_ITERM_SCRIPT = """
@@ -228,4 +228,5 @@ if __name__ == '__main__':
   #root.overrideredirect(True)
   center_window(root)
   app = App(root)
+  root.wm_attributes("-topmost", 1)
   root.mainloop()
