@@ -46,12 +46,16 @@ class Terminal(AppScript):
     super(Terminal, self).__init__(app=CONFIG["settings"]["terminal"])
 
   def ssh(self, host):
+    if sys.platform != 'darwin':
+      raise Exception("at the moment only mac os is supported :(")
+
     if self._app == "Terminal":
       SCRIPT = self.MAC_TERMINAL_SCRIPT
     elif self._app == "iTerm":
       SCRIPT = self.MAC_ITERM_SCRIPT
     else:
       raise Exception("unknown terminal")
+
     self._call(SCRIPT % dict(sshbin=CONFIG["settings"]["sshbin"], host=host))
 
 

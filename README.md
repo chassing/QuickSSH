@@ -1,8 +1,14 @@
 
 # QuickSsh
 
-MacOS/Linux quick starter for ssh
+MacOS/Linux ssh quick starter.
+
+
+## Requirements
+
+* nothing else as Python
+
 
 ## TODO
 
-TODO
+* linux support
