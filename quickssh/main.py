@@ -7,6 +7,27 @@ from subprocess import Popen, PIPE
 
 VERSION = "0.1"
 
+# default config
+CONFIG = dict(
+  settings=dict(
+    terminal="Terminal",
+    sshbin="/usr/bin/ssh",
+    window_width=400,
+    window_height=40,
+    item_display="%(host)s as user %(user)s"
+  ),
+  hosts=[
+    dict(
+      host="host.example.com",
+      user="root",
+      title="use title instead of host; optional"
+    ),
+    dict(
+      host="host2.example.com",
+      user="other_user",
+    ),
+  ]
+)
 
 class AppScript(object):
   MAIN_SCRIPT = """
@@ -18,7 +39,7 @@ class AppScript(object):
   def __init__(self, app):
     self._app = app
 
-  def _call(self, prog):
+  def call(self, prog):
     cmd = Popen(["osascript"], stdin=PIPE)
     cmd.communicate(self.MAIN_SCRIPT % dict(
       app=self._app,
@@ -26,7 +47,7 @@ class AppScript(object):
     ))
 
 
-class Terminal(AppScript):
+class Terminal(object):
   MAC_TERMINAL_SCRIPT = """
     do script "%(sshbin)s %(host)s"
     activate
@@ -41,22 +62,30 @@ class Terminal(AppScript):
       end tell
     end tell
   """
-
   def __init__(self):
-    super(Terminal, self).__init__(app=CONFIG["settings"]["terminal"])
+    self._app = CONFIG["settings"]["terminal"]
 
   def ssh(self, host):
-    if sys.platform != 'darwin':
-      raise Exception("at the moment only mac os is supported :(")
+    if sys.platform == 'darwin':
+      if self._app == "Terminal":
+        SCRIPT = self.MAC_TERMINAL_SCRIPT
+      elif self._app == "iTerm":
+        SCRIPT = self.MAC_ITERM_SCRIPT
+      else:
+        raise Exception("unknown terminal")
+      AppScript(app=self._app).call(SCRIPT % dict(sshbin=CONFIG["settings"]["sshbin"], host=host))
 
-    if self._app == "Terminal":
-      SCRIPT = self.MAC_TERMINAL_SCRIPT
-    elif self._app == "iTerm":
-      SCRIPT = self.MAC_ITERM_SCRIPT
+    elif sys.platform.startswith("linux"):
+      if self._app == "Terminal":
+        CMD = "gnome-terminal"
+      else:
+        raise Exception("unknown linux terminal; 'Terminal' is the only supported linux terminal at the moment")
+
+      cmd = Popen([CMD, '-e', "%s %s" % (CONFIG["settings"]["sshbin"], host)])
+      cmd.communicate()
     else:
-      raise Exception("unknown terminal")
+      raise Exception("unsupported platform")
 
-    self._call(SCRIPT % dict(sshbin=CONFIG["settings"]["sshbin"], host=host))
 
 
 class Hosts(Treeview):
@@ -104,12 +133,13 @@ class Hosts(Treeview):
 
 class App(object):
 
-  def __init__(self, parent):
+  def __init__(self, parent, std_message=""):
     self.parent = parent
     frame = Frame(parent)
     frame.pack(padx=0, pady=5)
 
     self.search = Entry(frame, width=int(CONFIG["settings"]["window_width"] / 8.3))
+    self.search.insert(0, std_message)
     self.search.grid(row=0)
     self.search.focus_force()
     self.search.bind('<KeyRelease>', self.search_callback)
@@ -160,7 +190,7 @@ class App(object):
         if "title" in host:
           field = host["title"]
 
-        if field.find(query[0]) > -1:
+        if field.lower().find(query[0].lower()) > -1:
           self.result.add(host)
 
       # split query; first is host, second is use
@@ -200,37 +230,22 @@ def main():
   CFG = os.path.join(os.environ["HOME"], ".quick_ssh.json")
   global CONFIG
 
+  if not os.path.exists(CFG):
+    # write default config file
+    open(CFG, "w").write(json.dumps(CONFIG, indent=2))
+
+  error_msg = ""
   try:
     CONFIG = json.loads(open(CFG).read())
   except:
-    # read config failed; get default config and write config file
-    CONFIG = dict(
-      settings=dict(
-        terminal="Terminal",
-        sshbin="/usr/bin/ssh",
-        window_width=400,
-        window_height=40,
-        item_display="%(host)s as user %(user)s"
-      ),
-      hosts=[
-        dict(
-          host="host.example.com",
-          user="root",
-          title="use title instead of host; optional"
-        ),
-        dict(
-          host="host2.example.com",
-          user="other_user",
-        ),
-      ]
-    )
-    open(CFG, "w").write(json.dumps(CONFIG, indent=2))
+    # read config failed
+    error_msg = "unable to read config file; json decode error"
 
   root = Tk()
   root.title('QuickSSH')
   root.resizable(0, 0)
   center_window(root)
-  App(root)
+  App(root, std_message=error_msg)
   root.mainloop()
 
 
