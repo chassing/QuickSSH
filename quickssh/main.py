@@ -29,6 +29,7 @@ CONFIG = dict(
   ]
 )
 
+
 class AppScript(object):
   MAIN_SCRIPT = """
   tell application "%(app)s"
@@ -62,6 +63,7 @@ class Terminal(object):
       end tell
     end tell
   """
+
   def __init__(self):
     self._app = CONFIG["settings"]["terminal"]
 
@@ -85,7 +87,6 @@ class Terminal(object):
       cmd.communicate()
     else:
       raise Exception("unsupported platform")
-
 
 
 class Hosts(Treeview):
